@@ -1,4 +1,5 @@
 use yew::prelude::*;
+use crate::Header;
 
 pub struct App {}
 
@@ -22,10 +23,13 @@ impl Component for App {
 
     fn view(&self) -> Html {
         html! {
-            <div>
-                <p>{ "Hello world!" }</p>
-                <div style="width: 250px;height: 250px">
-                    <video autoplay="autoplay" controls=true></video>
+            <div id="root" class="overflow-x-hidden">
+                <Header/>
+                <div class="relative">
+                    <p>{ "Hello world!" }</p>
+                    <div style="width: 250px;height: 250px">
+                        <video autoplay="autoplay" controls=true></video>
+                    </div>
                 </div>
             </div>
         }

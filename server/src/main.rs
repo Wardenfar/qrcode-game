@@ -20,6 +20,6 @@ async fn main() {
     let static_path = warp::fs::dir("assets");
 
     warp::serve(ws_path.or(static_path))
-        .run(([127, 0, 0, 1], 8080))
+        .run(([0, 0, 0, 0], 8080))
         .await;
 }

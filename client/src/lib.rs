@@ -1,4 +1,8 @@
 mod app;
+mod header;
+
+pub use app::*;
+pub use header::*;
 
 use wasm_bindgen::prelude::*;
 
