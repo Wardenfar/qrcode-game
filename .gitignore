@@ -1,4 +1,6 @@
 /target/
-/assets/build/
 /.idea/
 /Cargo.lock
+/client/node_modules/
+/assets/
+/client/yarn.lock
