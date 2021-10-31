@@ -1,0 +1,13 @@
+[package]
+categories = ["gui", "wasm", "web-programming"]
+edition = "2018"
+name = "qrcode-colo"
+readme = "README.md"
+version = "0.1.0"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+wasm-bindgen = "^0.2"
+yew = "^0.18"
