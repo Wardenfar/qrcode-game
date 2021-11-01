@@ -1,6 +1,6 @@
 use serde_derive::Deserialize;
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Clone, Debug, PartialEq)]
 pub struct Game {
     pub config: Config,
     pub codes: Vec<Code>
@@ -12,7 +12,7 @@ impl Game {
     }
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Clone, Debug, PartialEq)]
 pub struct Code {
     pub id: String,
     pub title: String,
@@ -20,7 +20,7 @@ pub struct Code {
     pub image: Option<String>
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Clone, Debug, PartialEq)]
 pub struct Config {
     pub team: bool
 }

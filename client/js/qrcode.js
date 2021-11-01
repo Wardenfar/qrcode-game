@@ -18,7 +18,11 @@ export function init_webcam() {
 
 function _read_qrcode_inner(canvas, callback) {
     let videoElem = document.querySelector('#webcam');
-    canvas.getContext('2d').drawImage(videoElem, 0, 0, canvas.width, canvas.height);
+    try {
+        canvas.getContext('2d').drawImage(videoElem, 0, 0, canvas.width, canvas.height);
+    }catch (e) {
+        return
+    }
     canvas.toBlob(blob => {
         const reader = new FileReader();
 

@@ -1,27 +1,43 @@
 use wasm_bindgen::JsValue;
-use yew::prelude::*;
-use crate::{Header, HeaderProps, Scan, ScanProps};
-use web_sys::{Request, RequestInit, RequestMode, Response};
-use common::Game;
-use crate::display::{Display, DisplayProps};
 use wasm_bindgen::prelude::*;
+
+use yew::prelude::*;
+
+use common::{Code, Game};
+
+use crate::{Header, HeaderProps, Scan, ScanProps};
+use crate::display::{Display, DisplayProps};
 
 #[wasm_bindgen(module = "/js/game.js")]
 extern "C" {
     #[wasm_bindgen]
     fn get_game_toml_val() -> JsValue;
+
+    #[wasm_bindgen]
+    fn set_hash(hash: String) -> JsValue;
+
+    #[wasm_bindgen]
+    fn on_hash_changed(closure: &Closure<dyn FnMut(String)>) -> JsValue;
 }
 
 pub struct App {
-    scan: bool,
-    current_id: Option<String>,
+    state: State,
+    history: Vec<Code>,
     link: ComponentLink<Self>,
     game: Game,
+    _hash_changed_closure: Closure<dyn FnMut(String)>,
+}
+
+#[derive(Debug, Clone)]
+pub enum State {
+    Scan,
+    Display(String),
+    History,
 }
 
 pub enum Msg {
-    Scan,
-    Display(String),
+    State(State),
+    HashChanged,
 }
 
 impl Component for App {
@@ -31,20 +47,51 @@ impl Component for App {
     fn create(_: Self::Properties, link: ComponentLink<Self>) -> Self {
         let input = get_game_toml_val().as_string().unwrap();
         let game = common::parse(&input);
-        App { scan: true, current_id: None, link, game }
+
+        // let link = Arc::new(link);
+
+        let callback = link.callback(|m: Msg| m);
+        let _hash_changed_closure = Closure::wrap(Box::new(move |_e: String| {
+            callback.emit(Msg::HashChanged);
+        }) as Box<dyn FnMut(String)>);
+        on_hash_changed(&_hash_changed_closure);
+
+        set_hash("scan".to_string());
+
+        App { state: State::Scan, history: vec![], link, game, _hash_changed_closure }
     }
 
     fn update(&mut self, msg: Self::Message) -> ShouldRender {
         match msg {
-            Msg::Scan => {
-                self.scan = true;
-                self.current_id = None;
-                true
+            Msg::State(state) => {
+                self.state = state.clone();
+                match state {
+                    State::Scan => {
+                        set_hash("scan".to_string());
+                        true
+                    }
+                    State::Display(id) => {
+                        if let Some(code) = self.game.find_code(&id) {
+                            if !self.history.contains(code) {
+                                self.history.push(code.clone())
+                            }
+                        }
+                        set_hash("display".to_string());
+                        true
+                    }
+                    State::History => {
+                        set_hash("history".to_string());
+                        true
+                    }
+                }
             }
-            Msg::Display(id) => {
-                self.scan = false;
-                self.current_id = Some(id);
-                true
+            Msg::HashChanged => {
+                if let State::Scan = self.state {
+                    false
+                } else {
+                    self.state = State::Scan;
+                    true
+                }
             }
         }
     }
@@ -54,43 +101,70 @@ impl Component for App {
     }
 
     fn view(&self) -> Html {
-        let scan_callback = self.link.callback(|_evt: MouseEvent| Msg::Scan);
-        let display_callback = self.link.callback(|id| Msg::Display(id));
+        let scan_callback = self.link.callback(|_evt: MouseEvent| Msg::State(State::Scan));
+        let history_callback = self.link.callback(|_evt: MouseEvent| Msg::State(State::History));
+        let display_callback = self.link.callback(|id| Msg::State(State::Display(id)));
 
         let header_props = yew::props!(HeaderProps {
-            scan_cb: scan_callback
+            scan_cb: scan_callback,
+            history_cb: history_callback
         });
 
-        if let Some(id) = &self.current_id {
-            let (title, text, image) = if let Some(code) = self.game.find_code(id) {
-                (code.title.clone(), code.text.clone(), code.image.clone())
-            } else {
-                (String::from("QrCode invalide"), String::from("..."), None)
-            };
+        match &self.state {
+            State::Scan => {
+                let props = yew::props!(ScanProps {
+                    display_cb: display_callback
+                });
+                let dom = html! {
+                    <div id="root" class="overflow-x-hidden">
+                        <Header with header_props />
+                        <Scan with props />
+                    </div>
+                };
+                dom
+            }
+            State::Display(id) => {
+                let (title, text, image) = if let Some(code) = self.game.find_code(id) {
+                    (code.title.clone(), code.text.clone(), code.image.clone())
+                } else {
+                    (String::from("QrCode invalide"), String::from("..."), None)
+                };
 
-            let props = yew::props!(DisplayProps {
-                title: title,
-                image: image,
-                text: text
-            });
-            let dom =  html! {
-                <div id="root" class="overflow-x-hidden">
-                    <Header with header_props />
-                    <Display with props />
-                </div>
-            };
-            dom
-        } else {
-            let props = yew::props!(ScanProps {
-                display_cb: display_callback
-            });
-            let dom = html! {
-                <div id="root" class="overflow-x-hidden">
-                    <Header with header_props />
-                    <Scan with props />
-                </div>
-            };
-            dom
+                let props = yew::props!(DisplayProps {
+                    title: title,
+                    image: image,
+                    text: text
+                });
+                let dom = html! {
+                    <div id="root" class="overflow-x-hidden">
+                        <Header with header_props />
+                        <Display with props />
+                    </div>
+                };
+                dom
+            }
+            State::History => {
+                let mut list: Vec<_> = Vec::default();
+                for code in &self.history {
+                    let id = code.id.clone();
+                    let onclick = self.link.callback(move |_| Msg::State(State::Display(id.clone())));
+                    let dom = html! {
+                        <div>
+                            <a onclick=onclick>{&code.title}</a>
+                        </div>
+                    };
+                    list.push(dom);
+                }
+                let dom = html! {
+                    <div id="root" class="overflow-x-hidden">
+                        <Header with header_props />
+                        <div>
+                            {list}
+                        </div>
+                    </div>
+                };
+                dom
+            }
         }
     }
 

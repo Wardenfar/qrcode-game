@@ -11,3 +11,13 @@ id = "Salle2"
 title = "Salle2 : Le boucher"
 text = "text text"
 image = "panda.jpg"
+
+[[codes]]
+id = "perso1"
+title = "Perso1 : Le boucher ich ich "
+text = "text text"
+image = "panda.jpg"
+
+    [codes.pass]
+    title = "Ce compte en banque demande un mot de passe"
+    secret = "5635"
