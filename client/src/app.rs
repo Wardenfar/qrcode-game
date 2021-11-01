@@ -62,14 +62,15 @@ impl Component for App {
         });
 
         if let Some(id) = &self.current_id {
-            let (title, text) = if let Some(code) = self.game.find_code(id) {
-                (code.title.clone(), code.text.clone())
+            let (title, text, image) = if let Some(code) = self.game.find_code(id) {
+                (code.title.clone(), code.text.clone(), code.image.clone())
             } else {
-                (String::from("QrCode invalide"), String::from("..."))
+                (String::from("QrCode invalide"), String::from("..."), None)
             };
 
             let props = yew::props!(DisplayProps {
                 title: title,
+                image: image,
                 text: text
             });
             let dom =  html! {

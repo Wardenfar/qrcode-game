@@ -1,8 +1,7 @@
 use yew::prelude::*;
 
 pub struct Display {
-    title: String,
-    text: String,
+    props: DisplayProps,
 }
 
 pub enum Msg {}
@@ -10,6 +9,7 @@ pub enum Msg {}
 #[derive(Properties, Clone, PartialEq)]
 pub struct DisplayProps {
     pub title: String,
+    pub image: Option<String>,
     pub text: String,
 }
 
@@ -18,7 +18,7 @@ impl Component for Display {
     type Properties = DisplayProps;
 
     fn create(props: Self::Properties, _: ComponentLink<Self>) -> Self {
-        Display { title: props.title, text: props.text }
+        Display { props }
     }
 
     fn update(&mut self, _msg: Self::Message) -> ShouldRender {
@@ -26,17 +26,29 @@ impl Component for Display {
     }
 
     fn change(&mut self, props: Self::Properties) -> ShouldRender {
-        self.title != props.title || self.text != props.text
+        true
     }
 
     fn view(&self) -> Html {
-        let title = &self.title;
-        let text = &self.text;
-        html! {
-            <div>
-                <h2>{title}</h2>
+        let title = &self.props.title;
+        let image = self.props.image.clone();
+        let text = &self.props.text;
+
+        let img_html = if let Some(image) = image {
+            html! {<img class="image" src=image />}
+        } else {
+            html! {}
+        };
+
+        let dom = html! {
+            <div class="p-3">
+                <h1 class="font-bold font-3xl text-center text-blue">{title}</h1>
+                {img_html}
                 <p>{text}</p>
             </div>
-        }
+        };
+        dom
+
+
     }
 }

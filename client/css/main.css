@@ -8,3 +8,7 @@
 .btn-blue {
     @apply bg-blue-500 text-white;
 }
+
+.image {
+    @apply block mx-auto w-full
+}

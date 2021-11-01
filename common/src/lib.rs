@@ -16,7 +16,8 @@ impl Game {
 pub struct Code {
     pub id: String,
     pub title: String,
-    pub text: String
+    pub text: String,
+    pub image: Option<String>
 }
 
 #[derive(Deserialize)]
