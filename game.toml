@@ -1,0 +1,12 @@
+[config]
+team = false
+
+[[codes]]
+id = "Salle1"
+title = "Salle1 : Le boulanger"
+text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam vitae velit erat. In sit amet sollicitudin lectus. Suspendisse potenti. In gravida aliquam dictum. Sed euismod dui quis urna rhoncus interdum. Sed vel dapibus arcu, id venenatis ex. Vivamus quis vulputate elit. Vivamus dapibus, lectus sed mollis malesuada, est eros consectetur risus, et molestie metus leo vitae massa. Duis vitae ex vitae orci mattis scelerisque. Nunc eleifend sodales elit, sit amet pretium nibh efficitur ac. Etiam lorem felis, ultrices nec auctor a, feugiat id lectus."
+
+[[codes]]
+id = "Salle2"
+title = "Salle2 : Le boucher"
+text = "text text"

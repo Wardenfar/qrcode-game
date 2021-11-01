@@ -1,8 +1,11 @@
 mod app;
 mod header;
+mod scan;
+mod display;
 
 pub use app::*;
 pub use header::*;
+pub use scan::*;
 
 use wasm_bindgen::prelude::*;
 

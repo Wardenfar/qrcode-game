@@ -19,7 +19,10 @@ async fn main() {
 
     let static_path = warp::fs::dir("assets");
 
-    warp::serve(ws_path.or(static_path))
+    let game_file = warp::path("game.toml")
+        .and(warp::fs::file("game.toml"));
+
+    warp::serve(ws_path.or(game_file.or(static_path)))
         .run(([0, 0, 0, 0], 8080))
         .await;
 }

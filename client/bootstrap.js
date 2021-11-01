@@ -1,9 +1,13 @@
-import {read_qrcode, display_video} from "./js/qrcode";
 import './css/main.css'
+// import {init_webcam} from "./js/qrcode";
 
 import("./pkg").then(module => {
-    module.run_app();
+    fetch("/game.toml")
+        .then(r => r.text())
+        .then(val => {
+            global.game_toml_val = val;
+            module.run_app();
+        })
 });
 
-global.read_qrcode = read_qrcode
-global.display_video = display_video
+// global.init_webcam = init_webcam;
