@@ -20,4 +20,5 @@ image = "panda.jpg"
 
     [codes.pass]
     title = "Ce compte en banque demande un mot de passe"
+    text = "hey"
     secret = "5635"

@@ -23,6 +23,7 @@ extern "C" {
 pub struct App {
     state: State,
     history: Vec<Code>,
+    unlocked: Vec<String>,
     link: ComponentLink<Self>,
     game: Game,
     _hash_changed_closure: Closure<dyn FnMut(String)>,
@@ -37,6 +38,7 @@ pub enum State {
 
 pub enum Msg {
     State(State),
+    Unlock(String),
     HashChanged,
 }
 
@@ -58,7 +60,7 @@ impl Component for App {
 
         set_hash("scan".to_string());
 
-        App { state: State::Scan, history: vec![], link, game, _hash_changed_closure }
+        App { state: State::Scan, history: vec![], unlocked: vec![], link, game, _hash_changed_closure }
     }
 
     fn update(&mut self, msg: Self::Message) -> ShouldRender {
@@ -92,18 +94,48 @@ impl Component for App {
                     self.state = State::Scan;
                     true
                 }
+            },
+            Msg::Unlock(entered_pass) => {
+                let unlocked= if let State::Display(id) = &self.state {
+                    if self.unlocked.contains(id) {
+                        None
+                    } else if let Some(code) = self.game.find_code(id) {
+                        if let Some(pass) = &code.pass {
+                            if pass.secret == entered_pass {
+                                Some(id.clone())
+                            } else {
+                                None
+                            }
+                        } else {
+                            None
+                        }
+                    } else {
+                        None
+                    }
+                } else {
+                    None
+                };
+
+                if let Some(unlocked) = unlocked {
+                    self.unlocked.push(unlocked.clone());
+                    self.state = State::Display(unlocked);
+                    true
+                } else {
+                    false
+                }
             }
         }
     }
 
     fn change(&mut self, _: Self::Properties) -> ShouldRender {
-        false
+        true
     }
 
     fn view(&self) -> Html {
         let scan_callback = self.link.callback(|_evt: MouseEvent| Msg::State(State::Scan));
         let history_callback = self.link.callback(|_evt: MouseEvent| Msg::State(State::History));
         let display_callback = self.link.callback(|id| Msg::State(State::Display(id)));
+        let unlock_callback = self.link.callback(|pass: InputData| Msg::Unlock(pass.value));
 
         let header_props = yew::props!(HeaderProps {
             scan_cb: scan_callback,
@@ -124,16 +156,27 @@ impl Component for App {
                 dom
             }
             State::Display(id) => {
-                let (title, text, image) = if let Some(code) = self.game.find_code(id) {
-                    (code.title.clone(), code.text.clone(), code.image.clone())
+                let (title, text, image, is_pass) = if let Some(code) = self.game.find_code(id) {
+                    if let Some(pass) = &code.pass {
+                        if self.unlocked.contains(id) {
+                            (code.title.clone(), code.text.clone(), code.image.clone(), false)
+                        } else {
+                            (pass.title.clone(), pass.text.clone(), pass.image.clone(), true)
+                        }
+                    } else {
+                        (code.title.clone(), code.text.clone(), code.image.clone(), false)
+                    }
+
                 } else {
-                    (String::from("QrCode invalide"), String::from("..."), None)
+                    (String::from("QrCode invalide"), String::from("..."), None, false)
                 };
 
                 let props = yew::props!(DisplayProps {
                     title: title,
                     image: image,
-                    text: text
+                    text: text,
+                    is_pass: is_pass,
+                    unlock_cb: unlock_callback
                 });
                 let dom = html! {
                     <div id="root" class="overflow-x-hidden">

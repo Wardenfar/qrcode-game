@@ -17,7 +17,16 @@ pub struct Code {
     pub id: String,
     pub title: String,
     pub text: String,
-    pub image: Option<String>
+    pub image: Option<String>,
+    pub pass: Option<Pass>
+}
+
+#[derive(Deserialize, Clone, Debug, PartialEq)]
+pub struct Pass {
+    pub title: String,
+    pub text: String,
+    pub image: Option<String>,
+    pub secret: String
 }
 
 #[derive(Deserialize, Clone, Debug, PartialEq)]
